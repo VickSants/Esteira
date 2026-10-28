@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Painel de Dados</title>
+    <style>
+        body {
+            background: #222;
+            color: white;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .ligado { color: #00ff00; font-weight: bold; }
+        .desligado { color: #ff0000; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <!-- Elementos HTML com IDs corretos -->
+    <p>Status: <span id="status">Carregando...</span></p>
+    <p>Velocidade: <span id="velocidade">0</span> RPM</p>
+    <p>Peças: <span id="pecas">0</span></p>
+
+    <script>
+        async function atualizar() {
+            try {
+                // Busca os dados do servidor Node.js
+                const resposta = await fetch("/dados");
+                
+                // Se a resposta não for correta, força o erro
+                if (!resposta.ok) throw new Error("Erro na resposta do servidor");
+                
+                const dados = await resposta.json();
+                
+                // 1. Atualiza o número de peças
+                document.getElementById("pecas").innerText = dados.pecas;
+                
+                // 2. Atualiza a velocidade
+                document.getElementById("velocidade").innerText = dados.velocidade;
+                
+                // 3. CORREÇÃO AQUI: Verifica 'dados.ligada' em vez de 'dados.status'
+                const statusElemento = document.getElementById("status");
+                if (dados.ligada === true) {
+                    statusElemento.innerText = "LIGADA";
+                    statusElemento.className = "ligado";
+                } else {
+                    statusElemento.innerText = "DESLIGADA";
+                    statusElemento.className = "desligado";
+                }
+                
+            } catch (erro) {
+                console.error("Erro ao buscar dados:", erro);
+                document.getElementById("status").innerText = "Erro de conexão";
+                document.getElementById("status").className = "desligado";
+            }
+        }
+
+        // Executa a função a cada 1 segundo (1000 milissegundos)
+        setInterval(atualizar, 1000);
+        
+        // Executa uma vez logo ao abrir a página
+        atualizar();
+    </script>
+
+</body>
+</html>
